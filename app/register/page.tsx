@@ -59,7 +59,7 @@ export default function RegisterPage() {
         description: "Your account has been created. Please check your email for verification.",
       })
 
-     //router.push("/login")
+     router.push("/login")
     } catch (error: any) {
       toast({
         title: "Error",

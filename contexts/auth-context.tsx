@@ -21,7 +21,11 @@ type AuthContextType = {
     data: any | null
   }>
   signOut: () => Promise<void>
-  loading: boolean
+  loading: boolean,
+  signUp: (email: string, password: string, name: string, role: any) => Promise<{
+    error: any | null
+    data: any | null
+  }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -144,7 +148,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
-    //router.push("/")
+    router.push("/")
+  }
+
+  const signUp = async (email: string, password: string, name: string, role: string) => {
+    console.log("Signing up with email:", email)
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+
+    if (data.user) {
+      console.log("Creating profile for new user")
+      try {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: data.user.id,
+            full_name: name,
+            role,
+          })
+
+        if (profileError) {
+          console.error("Error creating profile:", profileError)
+        }
+      } catch (profileError) {
+        console.error("Unexpected error creating profile:", profileError)
+      }
+    }
+
+    return { data, error }
   }
 
   const value = {
@@ -152,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     signIn,
     signOut,
+    signUp,
     loading,
   }
 
